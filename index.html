@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Coffee Bar</title>
+<style>
+  :root{
+    --paper:#e9e0d2;        /* kraft backdrop */
+    --paper-dk:#ddd0bd;
+    --espresso:#2a1a10;     /* deepest brown / text */
+    --roast:#43291a;        /* card brown */
+    --crema:#fbf6ee;        /* ticket / cards */
+    --amber:#c4742b;        /* warm accent */
+    --amber-dk:#a85e1d;
+    --mint:#3f8f7a;         /* iced accent */
+    --mint-dk:#326f60;
+    --line:#cdbfa9;
+    --muted:#8a7a64;
+    --ok:#2f7d4f;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0}
+  body{
+    background:
+      radial-gradient(1200px 600px at 50% -10%, #f0e8da, var(--paper)) fixed;
+    color:var(--espresso);
+    font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.5;
+    padding:0 16px 64px;
+  }
+  .wrap{max-width:680px;margin:0 auto}
+
+  /* ---------- header ---------- */
+  header{text-align:center;padding:34px 0 14px}
+  .cup{font-size:42px;line-height:1}
+  h1{
+    font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+    font-weight:800;letter-spacing:-.5px;
+    font-size:clamp(34px,8vw,52px);
+    margin:6px 0 2px;
+  }
+  .tagline{color:var(--roast);font-size:16px;margin:0}
+  .tagline b{color:var(--amber-dk)}
+
+  /* ---------- sections ---------- */
+  .card{
+    background:var(--crema);
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:18px 18px 20px;
+    margin:16px 0;
+    box-shadow:0 1px 0 #fff inset, 0 10px 24px -18px rgba(42,26,16,.5);
+  }
+  .step{display:flex;align-items:baseline;gap:10px;margin:0 0 12px}
+  .num{
+    flex:0 0 auto;width:26px;height:26px;border-radius:50%;
+    background:var(--espresso);color:var(--crema);
+    font-size:14px;font-weight:700;display:grid;place-items:center;
+    transform:translateY(2px);
+  }
+  .step h2{margin:0;font-size:18px;font-weight:700}
+  .step .hint{color:var(--muted);font-size:13px;margin-left:auto;align-self:center}
+
+  /* ---------- inputs ---------- */
+  input[type=text]{
+    width:100%;font:inherit;font-size:16px;color:var(--espresso);
+    background:#fff;border:1px solid var(--line);border-radius:10px;
+    padding:12px 14px;
+  }
+  input[type=text]:focus,button:focus-visible,.opt:focus-visible{
+    outline:3px solid rgba(196,116,43,.4);outline-offset:1px;
+  }
+  textarea{
+    width:100%;font:inherit;font-size:15px;color:var(--espresso);
+    background:#fff;border:1px solid var(--line);border-radius:10px;
+    padding:10px 12px;resize:vertical;min-height:54px;
+  }
+
+  /* ---------- option chips ---------- */
+  .grid{display:grid;gap:10px}
+  .g2{grid-template-columns:repeat(2,1fr)}
+  .g3{grid-template-columns:repeat(3,1fr)}
+  .opt{
+    appearance:none;cursor:pointer;text-align:left;
+    background:#fff;border:1.5px solid var(--line);border-radius:12px;
+    padding:12px 13px;font:inherit;color:var(--espresso);
+    display:flex;flex-direction:column;gap:1px;transition:.12s;
+    position:relative;
+  }
+  .opt:hover{border-color:var(--amber);transform:translateY(-1px)}
+  .opt .t{font-weight:700;font-size:15px}
+  .opt .d{font-size:12px;color:var(--muted)}
+  .opt[aria-pressed=true]{
+    background:var(--roast);border-color:var(--roast);color:var(--crema);
+    box-shadow:0 8px 18px -10px rgba(67,41,26,.7);
+  }
+  .opt[aria-pressed=true] .d{color:#e7d8c6}
+  .badge{
+    position:absolute;top:-8px;right:-6px;background:var(--amber);
+    color:#fff;font-size:10px;font-weight:800;letter-spacing:.4px;
+    padding:2px 7px;border-radius:20px;text-transform:uppercase;
+  }
+
+  /* temp toggle */
+  .temp{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .temp .opt{align-items:center;text-align:center}
+  .temp .opt.iced[aria-pressed=true]{background:var(--mint);border-color:var(--mint)}
+
+  .hide{display:none !important}
+  .softnote{font-size:12.5px;color:var(--muted);margin:8px 2px 0}
+
+  /* ---------- ticket ---------- */
+  .ticket{
+    background:var(--crema);
+    border-radius:4px;
+    padding:20px 22px 8px;
+    margin:16px 0;
+    font-family:ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+    color:#2a1a10;
+    position:relative;
+    box-shadow:0 14px 30px -20px rgba(42,26,16,.7);
+    /* torn edges */
+    -webkit-mask:
+      radial-gradient(7px at 7px 50%,#0000 98%,#000) -7px 0/100% 100%,
+      radial-gradient(7px,#000 98%,#0000) 0 0/14px 14px;
+  }
+  .ticket h3{
+    margin:0 0 2px;text-align:center;font-size:15px;letter-spacing:3px;
+    text-transform:uppercase;font-weight:700;
+  }
+  .ticket .sub{text-align:center;font-size:11px;color:var(--muted);margin:0 0 12px;letter-spacing:1px}
+  .rule{border:none;border-top:1.5px dashed #b7a489;margin:10px 0}
+  .line-item{padding:8px 0;border-bottom:1px dashed #d8c9b1}
+  .line-item:last-of-type{border-bottom:none}
+  .li-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+  .li-name{font-weight:700;font-size:14px}
+  .li-drink{font-size:13px}
+  .li-mods{font-size:12px;color:#6b5944;margin-top:2px;white-space:pre-line}
+  .rm{
+    appearance:none;border:none;background:none;cursor:pointer;
+    color:#b25b4a;font-size:18px;line-height:1;padding:0 2px;font-weight:700;
+  }
+  .empty-ticket{text-align:center;color:var(--muted);font-size:13px;padding:6px 0 12px}
+
+  /* ---------- buttons ---------- */
+  .btn{
+    appearance:none;cursor:pointer;font:inherit;font-weight:700;
+    border-radius:12px;padding:13px 16px;border:1.5px solid transparent;
+    transition:.12s;font-size:15px;
+  }
+  .btn:active{transform:translateY(1px)}
+  .btn-add{width:100%;background:var(--amber);color:#fff;border-color:var(--amber-dk)}
+  .btn-add:hover{background:var(--amber-dk)}
+  .btn-add:disabled{background:var(--paper-dk);color:var(--muted);border-color:var(--line);cursor:not-allowed}
+  .send-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px}
+  .btn-text{background:var(--mint);color:#fff;border-color:var(--mint-dk)}
+  .btn-text:hover{background:var(--mint-dk)}
+  .btn-mail{background:var(--roast);color:var(--crema);border-color:var(--espresso)}
+  .btn-mail:hover{background:var(--espresso)}
+  .btn-copy{
+    width:100%;margin-top:10px;background:transparent;color:var(--roast);
+    border:1.5px solid var(--line);
+  }
+  .btn-copy:hover{border-color:var(--roast)}
+  .btn-text:disabled,.btn-mail:disabled,.btn-copy:disabled{
+    opacity:.45;cursor:not-allowed;
+  }
+
+  .toast{
+    position:fixed;left:50%;bottom:20px;transform:translateX(-50%) translateY(20px);
+    background:var(--espresso);color:var(--crema);padding:11px 18px;border-radius:30px;
+    font-size:14px;font-weight:600;opacity:0;pointer-events:none;transition:.25s;
+    box-shadow:0 12px 30px -10px rgba(0,0,0,.5);z-index:50;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  footer{text-align:center;color:var(--muted);font-size:12px;margin-top:26px}
+  .err{color:#b25b4a;font-size:13px;font-weight:600;margin:8px 2px 0;min-height:0}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="cup">☕</div>
+    <h1>The Coffee Bar</h1>
+    <p class="tagline">Pull up a seat &mdash; <b>what can I make you?</b></p>
+  </header>
+
+  <!-- 1. NAME -->
+  <section class="card">
+    <div class="step"><span class="num">1</span><h2>Who's this for?</h2></div>
+    <input type="text" id="name" placeholder="e.g. Grandma, Tom, the kiddo…" autocomplete="off">
+  </section>
+
+  <!-- 2. DRINK -->
+  <section class="card">
+    <div class="step"><span class="num">2</span><h2>Pick your drink</h2></div>
+    <div class="grid g2" id="methods"></div>
+  </section>
+
+  <!-- 3. HOT / ICED -->
+  <section class="card" id="tempCard">
+    <div class="step"><span class="num">3</span><h2>Hot or iced?</h2></div>
+    <div class="temp" id="temp">
+      <button class="opt" type="button" data-temp="hot" aria-pressed="false"><span class="t">🔥 Hot</span></button>
+      <button class="opt iced" type="button" data-temp="iced" aria-pressed="false"><span class="t">🧊 Iced</span></button>
+    </div>
+  </section>
+
+  <!-- 4. SHOTS (espresso only) -->
+  <section class="card hide" id="shotsCard">
+    <div class="step"><span class="num">4</span><h2>How strong?</h2><span class="hint">espresso shots</span></div>
+    <div class="grid g3" id="shots">
+      <button class="opt" type="button" data-shots="1" aria-pressed="true"><span class="t">Single</span><span class="d">1 shot</span></button>
+      <button class="opt" type="button" data-shots="2" aria-pressed="false"><span class="t">Double</span><span class="d">2 shots</span></button>
+      <button class="opt" type="button" data-shots="3" aria-pressed="false"><span class="t">Triple</span><span class="d">3 shots — bold</span></button>
+    </div>
+  </section>
+
+  <!-- 5. MILK -->
+  <section class="card">
+    <div class="step"><span class="num" id="milkNum">5</span><h2>Milk?</h2></div>
+    <div class="grid g2" id="milk">
+      <button class="opt" type="button" data-milk="No milk" aria-pressed="true"><span class="t">No milk</span><span class="d">black / straight</span></button>
+      <button class="opt" type="button" data-milk="Whole milk" aria-pressed="false"><span class="t">Whole milk</span></button>
+      <button class="opt" type="button" data-milk="Lactose-free whole" aria-pressed="false"><span class="t">Lactose-free</span><span class="d">whole milk</span></button>
+      <button class="opt" type="button" data-milk="Cashew milk" aria-pressed="false"><span class="t">Cashew milk</span></button>
+      <button class="opt" type="button" data-milk="Oat milk" aria-pressed="false"><span class="t">Oat milk</span></button>
+    </div>
+  </section>
+
+  <!-- 6. FLAVOR -->
+  <section class="card">
+    <div class="step"><span class="num" id="flavNum">6</span><h2>Flavor?</h2></div>
+    <div class="grid g2" id="flavor">
+      <button class="opt" type="button" data-flavor="Unflavored" aria-pressed="true"><span class="t">Keep it plain</span></button>
+      <button class="opt" type="button" data-flavor="Maple syrup" aria-pressed="false"><span class="t">Maple syrup</span></button>
+      <button class="opt" type="button" data-flavor="Oreo creamer" aria-pressed="false"><span class="t">Oreo creamer</span></button>
+      <button class="opt" type="button" data-flavor="Caramel macchiato creamer" aria-pressed="false"><span class="t">Caramel macchiato</span><span class="d">creamer</span></button>
+      <button class="opt" type="button" data-flavor="S'mores" aria-pressed="false"><span class="t">S'mores</span><span class="d">while it lasts</span><span class="badge">limited</span></button>
+    </div>
+  </section>
+
+  <!-- 7. NOTES -->
+  <section class="card">
+    <div class="step"><span class="num" id="noteNum">7</span><h2>Anything else?</h2><span class="hint">optional</span></div>
+    <textarea id="notes" placeholder="extra sweet, light ice, decaf if you've got it…"></textarea>
+  </section>
+
+  <button class="btn btn-add" id="addBtn">+ Add this drink to the order</button>
+  <div class="err" id="err"></div>
+
+  <!-- ORDER TICKET -->
+  <div class="ticket">
+    <h3>Order Ticket</h3>
+    <p class="sub">brice's coffee bar</p>
+    <hr class="rule">
+    <div id="items"><div class="empty-ticket">No drinks yet — build one above and add it.</div></div>
+    <hr class="rule">
+  </div>
+
+  <div class="send-row">
+    <button class="btn btn-text" id="sendText" disabled>📱 Text the order</button>
+    <button class="btn btn-mail" id="sendMail" disabled>✉️ Email the order</button>
+  </div>
+  <button class="btn btn-copy" id="copyBtn" disabled>Copy order to clipboard</button>
+
+  <footer>Orders go straight to the barista. ☕</footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ===== where orders go ===== */
+const BARISTA_PHONE = "+17657192959";              // 765-719-2959
+const BARISTA_EMAIL = "briceljohnson@gmail.com";
+
+/* ===== drink menu ===== */
+const METHODS = [
+  {id:"espresso",   label:"Espresso",     desc:"a straight shot",        espresso:true},
+  {id:"americano",  label:"Americano",    desc:"espresso + hot water",   espresso:true},
+  {id:"latte",      label:"Latte",        desc:"espresso, lots of milk", espresso:true},
+  {id:"cappuccino", label:"Cappuccino",   desc:"espresso + foam",        espresso:true},
+  {id:"macchiato",  label:"Macchiato",    desc:"espresso, splash milk",  espresso:true},
+  {id:"cortado",    label:"Cortado",      desc:"equal espresso + milk",  espresso:true},
+  {id:"flatwhite",  label:"Flat White",   desc:"espresso, silky milk",   espresso:true},
+  {id:"pourover",   label:"Pour Over",    desc:"hand-brewed, smooth",    espresso:false},
+];
+
+/* ===== current drink state ===== */
+const cur = { name:"", method:null, temp:null, shots:"2", milk:"No milk", flavor:"Unflavored", notes:"" };
+let orders = [];
+
+/* ===== build method buttons ===== */
+const methodsEl = document.getElementById("methods");
+METHODS.forEach(m=>{
+  const b=document.createElement("button");
+  b.className="opt";b.type="button";b.setAttribute("aria-pressed","false");
+  b.dataset.method=m.id;
+  b.innerHTML=`<span class="t">${m.label}</span><span class="d">${m.desc}</span>`;
+  methodsEl.appendChild(b);
+});
+
+/* ===== generic single-select wiring ===== */
+function singleSelect(containerId, onPick){
+  const c=document.getElementById(containerId);
+  c.addEventListener("click",e=>{
+    const btn=e.target.closest(".opt"); if(!btn) return;
+    c.querySelectorAll(".opt").forEach(o=>o.setAttribute("aria-pressed","false"));
+    btn.setAttribute("aria-pressed","true");
+    onPick(btn);
+  });
+}
+
+singleSelect("methods", btn=>{
+  cur.method = METHODS.find(m=>m.id===btn.dataset.method);
+  // espresso drinks reveal the strength step + renumber the rest
+  const isEsp = cur.method.espresso;
+  document.getElementById("shotsCard").classList.toggle("hide", !isEsp);
+  document.getElementById("milkNum").textContent = isEsp ? 5 : 4;
+  document.getElementById("flavNum").textContent = isEsp ? 6 : 5;
+  document.getElementById("noteNum").textContent = isEsp ? 7 : 6;
+});
+singleSelect("temp",   btn=>cur.temp   = btn.dataset.temp);
+singleSelect("shots",  btn=>cur.shots  = btn.dataset.shots);
+singleSelect("milk",   btn=>cur.milk   = btn.dataset.milk);
+singleSelect("flavor", btn=>cur.flavor = btn.dataset.flavor);
+
+document.getElementById("name").addEventListener("input",e=>cur.name=e.target.value.trim());
+document.getElementById("notes").addEventListener("input",e=>cur.notes=e.target.value.trim());
+
+/* ===== describe a drink in one tidy line ===== */
+function drinkTitle(o){
+  const temp = o.temp==="iced" ? "Iced " : "";
+  let name = o.method.label;
+  return (temp+name).trim();
+}
+function drinkMods(o){
+  const mods=[];
+  if(o.method.espresso){
+    const n=Number(o.shots);
+    mods.push(n+" shot"+(n>1?"s":""));
+  }
+  if(o.milk && o.milk!=="No milk") mods.push(o.milk.toLowerCase());
+  else if(!o.method.espresso) mods.push("black");
+  if(o.flavor && o.flavor!=="Unflavored") mods.push(o.flavor);
+  return mods;
+}
+
+/* ===== add drink ===== */
+const errEl=document.getElementById("err");
+document.getElementById("addBtn").addEventListener("click",()=>{
+  errEl.textContent="";
+  if(!cur.name){ errEl.textContent="Add a name so I know whose drink it is."; document.getElementById("name").focus(); return; }
+  if(!cur.method){ errEl.textContent="Pick a drink first ☕"; return; }
+  if(!cur.temp){ errEl.textContent="Hot or iced?"; return; }
+
+  orders.push({
+    name:cur.name, method:cur.method, temp:cur.temp,
+    shots:cur.shots, milk:cur.milk, flavor:cur.flavor, notes:cur.notes
+  });
+  renderTicket();
+  resetForm();
+  showToast(cur_just_added_msg());
+});
+
+let lastName="";
+function cur_just_added_msg(){ return "Added — make another or send it 👇"; }
+
+function resetForm(){
+  lastName="";
+  cur.name="";cur.method=null;cur.temp=null;cur.shots="2";cur.milk="No milk";cur.flavor="Unflavored";cur.notes="";
+  document.getElementById("name").value="";
+  document.getElementById("notes").value="";
+  document.querySelectorAll("#methods .opt,#temp .opt").forEach(o=>o.setAttribute("aria-pressed","false"));
+  // reset defaults
+  setPressed("shots","2"); setPressed("milk","No milk"); setPressed("flavor","Unflavored");
+  document.getElementById("shotsCard").classList.add("hide");
+  document.getElementById("milkNum").textContent=5;
+  document.getElementById("flavNum").textContent=6;
+  document.getElementById("noteNum").textContent=7;
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+function setPressed(containerId,val){
+  const c=document.getElementById(containerId);
+  c.querySelectorAll(".opt").forEach(o=>{
+    const k=o.dataset.shots||o.dataset.milk||o.dataset.flavor;
+    o.setAttribute("aria-pressed", k===val ? "true":"false");
+  });
+}
+
+/* ===== render the ticket ===== */
+function renderTicket(){
+  const wrap=document.getElementById("items");
+  if(orders.length===0){
+    wrap.innerHTML='<div class="empty-ticket">No drinks yet — build one above and add it.</div>';
+  }else{
+    wrap.innerHTML="";
+    orders.forEach((o,i)=>{
+      const mods=drinkMods(o);
+      const div=document.createElement("div");
+      div.className="line-item";
+      div.innerHTML=`
+        <div class="li-top">
+          <div>
+            <div class="li-name">${escapeHtml(o.name)}</div>
+            <div class="li-drink">${escapeHtml(drinkTitle(o))}</div>
+            ${mods.length?`<div class="li-mods">• ${mods.map(escapeHtml).join("\n• ")}</div>`:""}
+            ${o.notes?`<div class="li-mods">✎ ${escapeHtml(o.notes)}</div>`:""}
+          </div>
+          <button class="rm" data-i="${i}" aria-label="Remove ${escapeHtml(o.name)}'s drink">×</button>
+        </div>`;
+      wrap.appendChild(div);
+    });
+  }
+  const has=orders.length>0;
+  ["sendText","sendMail","copyBtn"].forEach(id=>document.getElementById(id).disabled=!has);
+}
+document.getElementById("items").addEventListener("click",e=>{
+  const b=e.target.closest(".rm"); if(!b) return;
+  orders.splice(Number(b.dataset.i),1);
+  renderTicket();
+});
+
+/* ===== build the message text ===== */
+function buildOrderText(){
+  let lines=["☕ COFFEE ORDER",""];
+  orders.forEach((o,i)=>{
+    lines.push(`${i+1}) For ${o.name}`);
+    lines.push(`   ${drinkTitle(o)}`);
+    drinkMods(o).forEach(m=>lines.push(`   • ${m}`));
+    if(o.notes) lines.push(`   ✎ ${o.notes}`);
+    lines.push("");
+  });
+  lines.push(`(${orders.length} drink${orders.length>1?"s":""} — sent from the Coffee Bar)`);
+  return lines.join("\n");
+}
+
+/* ===== send ===== */
+document.getElementById("sendText").addEventListener("click",()=>{
+  if(!orders.length) return;
+  const body=encodeURIComponent(buildOrderText());
+  // ?& form works across iOS + Android
+  window.location.href=`sms:${BARISTA_PHONE}?&body=${body}`;
+});
+document.getElementById("sendMail").addEventListener("click",()=>{
+  if(!orders.length) return;
+  const subj=encodeURIComponent(`Coffee order — ${orders.length} drink${orders.length>1?"s":""}`);
+  const body=encodeURIComponent(buildOrderText());
+  window.location.href=`mailto:${BARISTA_EMAIL}?subject=${subj}&body=${body}`;
+});
+document.getElementById("copyBtn").addEventListener("click",async()=>{
+  if(!orders.length) return;
+  const txt=buildOrderText();
+  try{
+    await navigator.clipboard.writeText(txt);
+    showToast("Copied! Paste it anywhere 📋");
+  }catch(_){
+    const ta=document.createElement("textarea");
+    ta.value=txt;document.body.appendChild(ta);ta.select();
+    try{document.execCommand("copy");showToast("Copied! 📋");}catch(e){showToast("Couldn't copy — long-press to select.");}
+    ta.remove();
+  }
+});
+
+/* ===== helpers ===== */
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+let toastTimer;
+function showToast(msg){
+  const t=document.getElementById("toast");
+  t.textContent=msg;t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove("show"),2400);
+}
+
+renderTicket();
+</script>
+</body>
+</html>
